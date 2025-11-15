@@ -1,6 +1,14 @@
 #include <Adafruit_MotorShield.h>
 #include <NewPing.h>
+#include <Servo.h>
 
+Servo myServo1;
+
+int pos1 = -45;
+long duration;
+int distance;
+bool objectDetected1 = False;
+int posDetected1;
 
 Adafruit_MotorShield myMotorShield = Adafruit_MotorShield();
 
@@ -20,39 +28,85 @@ void setup()
   myMotorShield.begin();
   set_speed(100);
   stop();
+  myServo1.attach(9);
 }
+
 void loop()
 {
   go_forward();
-  long duration;
-  int distance;
+  check_distance();
+  while(get_distance() >= 10 || get_distance() < 1 && objectDetected1 == False)
+  {
+    servo1();
+    check_distance();
+    go_forward();
+  } else {
+    
+  }
+}
+
+void servo1()
+{
+  int pos = pos1;
+  for (pos = -45; pos <= 44; pos + 1)
+  {
+    myServo1.write(pos);
+    delay(50);
+    if(distance <= 10 && distance >0)
+    {
+      posDetected1 = pos;
+      check_distance();
+      while(objectDetected1 == True)
+      {
+        for(int tempPos = pos; tempPos <= 45; tempPos +1)
+        {
+          turn_left();
+          pos = tempPos;
+          myServo1.write(pos);
+        }
+      }
+    }
+  }
+  pos = 45
+  for (pos = 45; pos >= -46; pos - 1)
+  {
+    myServo1.write(pos);
+    delay(50);
+    if(distance <= 10 && distance >0)
+    {
+      posDetected1 = pos;
+      check_distance();
+      while(objectDetected1 == True)
+      {
+        for(int tempPos = pos; tempPos <= 45; tempPos +1)
+        {
+          turn_left();
+          pos = tempPos;
+          myServo1.write(pos);
+        }
+      }
+    }
+  }
+}
+
+bool check_distance()
+{
+  if(distance <= 10 && distance > 0)
+  {
+    objectDetected1 == True;
+  } else {
+    objectDetected1 == False;
+  }
+return objectDetected1;
+}
+
+int get_distance()
+{
   duration = sonar.ping();
   distance = duration*(.034/2);
   Serial.print("Distance is : ");
   Serial.print(distance);
   Serial.println("cm");
-  if(distance <= 10 && distance >0)
-  {
-    stop();
-    turn_right();
-    delay(1000);
-    go_forward();
-    delay(2941);
-    stop();
-    delay(5000);
-  } else {
-    go_forward();
-  }
-}
-
-int get_distance()
-{
-  unsigned long duration = 0;
-  float float_distance = 0.0;
-  duration = sonar.ping_median(5);
-  float_distance = duration*(.034/2);
-  int distance = (int)float_distance;
-  Serial.println("Distance is : "+ distance);
   delay(500);
 
   return distance;
